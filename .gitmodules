@@ -1,0 +1,6 @@
+[submodule "commons-math"]
+	path = commons-math
+	url = https://github.com/apache/commons-math
+[submodule "pdfbox"]
+	path = pdfbox
+	url = https://github.com/apache/pdfbox
