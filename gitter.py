@@ -1,9 +1,14 @@
 import os
 import subprocess
+import git
+import json
 from subprocess import PIPE
+from datetime import date, datetime, timedelta
 
-repos = ["commons-math", "pdfbox"]
+homePath = os.getcwd()
+repos = [ "commons-math", "pdfbox"]
 repoInfo = {}
+reposChanges = {}
 
 def a():
     print "\ta:"
@@ -100,37 +105,152 @@ def e(commits):
         print   '\t\t' + contributors[author][0] + '\t' + author, \
                 "{0:.3f}%".format(float(contributors[author][1])/float(commits) * 100)
 
-    #print type(gitP)
-    #print gitP
-    #git shortlog -s --pretty="%ae"
-
     return contributors
 
 def f():
     print "\tf:"
 
-    print '\t\tAnswer Below in Combined Repo Answers'
+    print '\t\tAnswer Below in Common Repo Answers'
 
-def g():
+def g(repo, contributors):
     print "\tg:"
 
-def h():
+    print "\t\tContributors Inactive For More Than 6 Months:"
+    inactiveTime = 30 * 6        # 30 days per month, for 6 months
+    today = datetime.today()
+    afterDate = today - timedelta(days=inactiveTime)
+
+    #print afterDate.date()
+    g = git.Git(getPath(repo))
+    logInfo = g.log('--after={' + str(afterDate.date()) + '}', '--pretty=format:"%ae"')
+    logToList = str(logInfo).split('\n')
+
+    # remove duplicates
+    logToList = list(set(logToList))
+    for i, val in enumerate(logToList):
+        logToList[i] = val.strip('"')
+        #print "\t\tLog", val
+
+    #print logToList
+
+    for author in contributors:
+        if author not in logToList:
+            print "\t\t" + author
+
+     # git log --after={2017-08-01} --pretty=format:"%ae" | sort | uniq
+
+def h(repo):
     print "\th:"
 
+    g = git.Git(getPath(repo))
+
+    #gitP = subprocess.Popen(('git log --pretty=format:"" --diff-filter=A --summary'), shell=True, stdout=PIPE)
+    #diffP = subprocess.Popen(('grep create'), shell=True, stdin=gitP.stdout, stdout=PIPE)
+    #c = subprocess.check_output('wc -l', shell=True, stdin=diffP.stdout)
+    #c = c.strip('\n')
+
+    #gitP.wait()
+    #diffP.wait()
+
+    logInfo = g.log('--pretty=format:""', '--diff-filter=A', '--summary')
+    logToList = logInfo.split('\n')
+
+    #for log in logToList:
+        #print log
+
+    #print "size:", len(logToList)
+    for i, val in enumerate(logToList):
+        logToList[i] = str(val).strip('"')
+    #print logToList
+
+    createNum = 0
+    for log in logToList:
+        if "mode" in log:
+            createNum += 1
+
+        # print the lines that are obtained from the log query
+        # print log
+
+    #print "log size:", len(logToList)
+    print "\t\tNumber Of Files Added:", createNum
+
+    logInfo = g.log('--pretty=format:""', '--diff-filter=D', '--summary')
+    logToList = logInfo.split('\n')
+
+    for i, val in enumerate(logToList):
+        logToList[i] = str(val).strip('"')
+
+    deleteNum = 0
+    for log in logToList:
+        if "delete" in log:
+            deleteNum += 1
+
+        # print the lines that are obtained from the log query
+        # print log
+
+    #print "log size:", len(logToList)
+    print "\t\tNumber Of Files Deleted:", deleteNum
+
+    logInfo = g.log('--pretty=format:tformat', '--diff-filter=M')
+    #print logInfo
+    logToList = str(logInfo).split('\n')
+
+    #for log in logToList:
+        #print log
+
+    modifyNum = len(logToList)
+
+        # print the lines that are obtained from the log query
+        # print log
+
+    #print "log size:", len(logToList)
+    print "\t\tNumber Of Files Modified:", modifyNum
+
+
+    # git log --pretty=format:"" --diff-filter=A --summary | grep create | wc -l
 def i():
     print "\ti:"
 
+def getHashes():
+    hashes = subprocess.check_output('git log --pretty=format:"%h"', shell=True)
+    hashes = hashes.split('\n')
+
+    #print "hashes:", hashes
+    return hashes
+
+def changedFiles(repo, hashes):
+    changes = []
+
+    for hash in hashes:
+        #print hash
+        files = subprocess.check_output(('git', 'diff-tree', '--no-commit-id', '--name-only', '-r', hash), shell=True)
+        files = files.split('\n')
+        files = files[:-1]                          # remove empty space at end of every line
+        if len(files) > 0 and len(files) < 10:
+            # print files
+            changes.append(files)
+        #print ""
+
+        # bottom line is done in main with return
+        #reposChanges[repo] = changes
+
+    return changes
+
+def getPath(repo):
+    return homePath + '/' + repo
+
 def main():
 
+    '''
     print "Question 1:"
 
-    wd = os.getcwd()
+    contributors = {}
+
     for repo in repos:
 
         repoInfo[repo] = []
 
-        os.chdir(wd + '/' + repo)
-
+        os.chdir(getPath(repo))
         print "    Repo:", repo
         print ""
 
@@ -138,14 +258,12 @@ def main():
         #add result to dict
         a_ret = a()
         repoInfo[repo].append(('a', a_ret))
-
         print ""
 
         # 1.b : average number of commits per file, per repo
         #print fileCount
         b_ret = b(a_ret)
         repoInfo[repo].append(('b', b_ret))
-
         print ""
 
         # 1.c : number of contributors, per repos
@@ -157,7 +275,8 @@ def main():
         print ""
 
         # 1.e : percentage of changes done by each contributor, per repo
-        e_ret = e(a_ret)
+        e_ret = e(a_ret)    # return a list  of contributors
+        contributors[repo] = e_ret
         print ""
 
         # 1.f : people that contributed to both projects, number of commits to each repo
@@ -165,11 +284,11 @@ def main():
         print ""
 
         # 1.g : which contributors have been inactive for past six months or more, per repo
-        g_ret = g()
+        g_ret = g(repo, e_ret)
         print ""
 
         # 1.h : number of files added,  deleted, modified in the past year, per repo
-        h_ret = h()
+        h_ret = h(repo)
         print ""
 
         # 1.i : summarize what was observed. Similarities, differences
@@ -181,14 +300,56 @@ def main():
         # print answer lists for each repo
         # print repo + ":", repoInfo[repo]
 
-        os.chdir(wd)
+        os.chdir(homePath)
+        print "\n"
 
-        '''
-        os.chdir(dir)
-        print os.listdir('.')
-        os.chdir("..")
-        print ""
-        '''
+    # 1.f : people that contributed to both projects, number of commits to each repo
+    print "    Common Questions for %s and %s :" % (repos[0], repos[1])
+    print "\tf. Authors That Contributed to Both Projects:"
+
+    found = False
+    for author in contributors[repos[0]]:
+        if author in contributors[repos[1]]:
+            found = True
+            print "\t\t" + author
+
+    if not found:
+        print "\t\tNone Found"
+
+    print '\n'
+    '''
+
+
+    print "Question 2:"
+
+    changes = []
+
+    '''
+    for repo in repos:
+        os.chdir(getPath(repo))
+
+        hashes = getHashes()
+        changes = changedFiles(repo, hashes)
+        reposChanges[repo] = changes
+
+        os.chdir(homePath)
+
+
+    with open('data.txt', 'w') as outfile:
+        json.dump(reposChanges, outfile)
+
+    '''
+
+
+
+    # get hash value of commit
+    # git log --pretty=format:"%h"
+
+    # get files associated with commit hash
+    # git diff-tree --no-commit-id --name-only -r <hash>
+    # (ex. git diff-tree --no-commit-id --name-only -r 4e93138)
+
+
 
 if __name__ == "__main__":
     main();
