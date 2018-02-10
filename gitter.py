@@ -5,7 +5,6 @@ import json
 import itertools
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
-import matplotlib.pyplot as plt
 
 from subprocess import PIPE
 from datetime import date, datetime, timedelta
@@ -15,15 +14,15 @@ repos = [ "commons-math", "pdfbox"]
 repoInfo = {}
 reposChanges = {}
 
-def a():
-    print "\ta:"
+def aa():
+    print "\t\ta)"
     a = subprocess.check_output('git rev-list --count HEAD', shell=True)
     a = a.rstrip('\n')
-    print "\t\tTotal Number of Commits:", a
+    print "\t\t\tTotal Number of Commits:", a
     return a
 
 def b(commits):
-    print "\tb:"
+    print "\t\tb)"
 
     # 1.b : average number of commits per file, per repo
     gitP = subprocess.Popen(('git ls-files'), shell=True, stdout=PIPE)
@@ -33,13 +32,13 @@ def b(commits):
 
     ret = float(commits) / float(fileCount)
 
-    print "\t\tTotal Number of Files:", fileCount
-    print "\t\tAverage Number of Commits Per File = %s / %s = %f" % (commits, fileCount, ret)
+    print "\t\t\tTotal Number of Files:", fileCount
+    print "\t\t\tAverage Number of Commits Per File = %s / %s = %f" % (commits, fileCount, ret)
 
     return ret
 
 def c():
-    print "\tc:"
+    print "\t\tc)"
 
     # get a list of contributors email, one per line for each contributor
     # a couple of pipes to get each unique email, and sort the output
@@ -54,23 +53,23 @@ def c():
     sortP.wait()
     uniqP.wait()
 
-    print "\t\tNumber of contributors:", c
+    print "\t\t\tNumber of contributors:", c
 
     return c
 
 def d(commits, contributors):
-    print "\td:"
+    print "\t\td)"
 
     # commits per contributor
     ret = float(commits) / float(contributors)
 
     # output
-    print "\t\tAverage Number of Commits Per Contributor = %s / %s = %f" % (commits, contributors, ret)
+    print "\t\t\tAverage Number of Commits Per Contributor = %s / %s = %f" % (commits, contributors, ret)
 
     return ret
 
 def e(commits):
-    print "\te:"
+    print "\t\te)"
 
     gitP = subprocess.check_output(('git shortlog -se'), shell=True)
     gitP = gitP[:-1]
@@ -105,22 +104,23 @@ def e(commits):
         else:
             contributors[a_email] = [a_name, a_commits]
 
-
+    template = "{0:25}{1:25}\t{2:20}" # column widths: 50, 50, 20
+    print "\t\t\t" + template.format("Contributor Name", "Contributor Email", "Percent of Commits")
+    print ""
     for author in contributors.keys():
-        print   '\t\t' + contributors[author][0] + '\t' + author, \
-                "{0:.3f}%".format(float(contributors[author][1])/float(commits) * 100)
+        print "\t\t\t" + template.format(contributors[author][0][0:25], author[0:25], "{0:.3f}%".format(float(contributors[author][1])/float(commits) * 100))
 
     return contributors
 
 def f():
-    print "\tf:"
+    print "\t\tf)"
 
-    print '\t\tAnswer Below in Common Repo Answers'
+    print '\t\t\tAnswer Below in Common Repo Answers'
 
 def g(repo, contributors):
-    print "\tg:"
+    print "\t\tg)"
 
-    print "\t\tContributors Inactive For More Than 6 Months:"
+    print "\t\t\tContributors Inactive For More Than 6 Months:"
     inactiveTime = 30 * 6        # 30 days per month, for 6 months
     today = datetime.today()
     afterDate = today - timedelta(days=inactiveTime)
@@ -140,12 +140,12 @@ def g(repo, contributors):
 
     for author in contributors:
         if author not in logToList:
-            print "\t\t" + author
+            print "\t\t\t" + author
 
      # git log --after={2017-08-01} --pretty=format:"%ae" | sort | uniq
 
 def h(repo):
-    print "\th:"
+    print "\t\th)"
 
     g = git.Git(getPath(repo))
 
@@ -157,7 +157,7 @@ def h(repo):
     #gitP.wait()
     #diffP.wait()
 
-    logInfo = g.log('--pretty=format:""', '--diff-filter=A', '--summary')
+    logInfo = g.log('--pretty=format:""', '--diff-filter=A', '--summary', '--since="1 year ago"')
     logToList = logInfo.split('\n')
 
     #for log in logToList:
@@ -177,7 +177,7 @@ def h(repo):
         # print log
 
     #print "log size:", len(logToList)
-    print "\t\tNumber Of Files Added:", createNum
+    print "\t\t\tNumber Of Files Added:", createNum
 
     logInfo = g.log('--pretty=format:""', '--diff-filter=D', '--summary')
     logToList = logInfo.split('\n')
@@ -194,7 +194,7 @@ def h(repo):
         # print log
 
     #print "log size:", len(logToList)
-    print "\t\tNumber Of Files Deleted:", deleteNum
+    print "\t\t\tNumber Of Files Deleted:", deleteNum
 
     logInfo = g.log('--pretty=format:tformat', '--diff-filter=M')
     #print logInfo
@@ -209,12 +209,13 @@ def h(repo):
         # print log
 
     #print "log size:", len(logToList)
-    print "\t\tNumber Of Files Modified:", modifyNum
+    print "\t\t\tNumber Of Files Modified:", modifyNum
 
 
     # git log --pretty=format:"" --diff-filter=A --summary | grep create | wc -l
-def i():
-    print "\ti:"
+def ii():
+    print "\t\ti)"
+    print '\t\t\tAnswer Below in Common Repo Answers'
 
 def getHashes():
     hashes = subprocess.check_output('git log --pretty=format:"%h"', shell=True)
@@ -246,8 +247,8 @@ def getPath(repo):
 
 def main():
 
-    '''
     print "Question 1:"
+    print ""
 
     contributors = {}
 
@@ -256,12 +257,12 @@ def main():
         repoInfo[repo] = []
 
         os.chdir(getPath(repo))
-        print "    Repo:", repo
+        print "\tRepo:", repo
         print ""
 
         # 1.a : overall number of commits, per repo
         #add result to dict
-        a_ret = a()
+        a_ret = aa()
         repoInfo[repo].append(('a', a_ret))
         print ""
 
@@ -297,7 +298,7 @@ def main():
         print ""
 
         # 1.i : summarize what was observed. Similarities, differences
-        i_ret = i()
+        i_ret = ii()
         print ""
 
         # cd back to calling directory
@@ -309,8 +310,10 @@ def main():
         print "\n"
 
     # 1.f : people that contributed to both projects, number of commits to each repo
-    print "    Common Questions for %s and %s :" % (repos[0], repos[1])
-    print "\tf. Authors That Contributed to Both Projects:"
+    print "\tCommon Questions for %s and %s :" % (repos[0], repos[1])
+    print ""
+
+    print "\t\tf. Authors That Contributed to Both Projects:"
 
     found = False
     for author in contributors[repos[0]]:
@@ -319,13 +322,19 @@ def main():
             print "\t\t" + author
 
     if not found:
-        print "\t\tNone Found"
+        print "\t\t\tNone Found"
+
+    print ""
+    # 1.h : number of files added,  deleted, modified in the past year, per repo
+    print "\t\ti : summarize what was observed. Similarities, differences:"
+    print   "\t\t\tObserving the results for both repositories showed that just because both repositories belong to apache, it doesn't mean that developers in one project will necessarily contribute to another project. I also observed that only a few developers are typically responsible for the majority of commits in the project. Most contributos are also typically inactive after a certain period of time since the project was released. After some time only a few contributors continue to push commits, therefore only a few maintain the software."
 
     print '\n'
-    '''
+
 
 
     print "Question 2:"
+    print ""
 
     '''
     changes = []
@@ -339,7 +348,7 @@ def main():
 
         os.chdir(homePath)
 
-    with open('data2.txt', 'w') as outfile:
+    with open('data.json', 'w') as outfile:
         json.dump(reposChanges, outfile)
 
     '''
@@ -360,7 +369,7 @@ def main():
         for a in reposChanges[repo]:
             #for elem in a:
             for i in range(2, len(a)+1):
-                if len(a) > 1:
+                if len(a) > 1 and len(a) < 15:
                     #print "len:", len(a)
                     #print "i:", i
                     combos = list(itertools.combinations(a, i))
@@ -385,47 +394,50 @@ def main():
     fourSetsList    = []
     fiveSetsList    = []
 
-    for key, value in setDictList[0].iteritems():
-        #print key
-        if len(key) is 2 and value > 3 and len(twoSetsList) < 4:
-            twoSetsList.append(key)
+    for ind, sets in enumerate(setDictList):
+        print "\t" + repos[ind] + ":"
+        for key, value in sets.iteritems():
+            #print key
+            if len(key) is 2 and value > 3 and len(twoSetsList) < 4:
+                twoSetsList.append(key)
 
-        if len(key) is 3 and value > 3 and len(threeSetsList) < 3:
-            threeSetsList.append(key)
+            if len(key) is 3 and value > 3 and len(threeSetsList) < 3:
+                threeSetsList.append(key)
 
-        if len(key) is 4 and value > 3 and len(fourSetsList) < 2:
-            fourSetsList.append(key)
+            if len(key) is 4 and value > 3 and len(fourSetsList) < 2:
+                fourSetsList.append(key)
 
-        if len(key) is 5 and value > 3 and len(fiveSetsList) < 1:
-            fiveSetsList.append(key)
+            if len(key) is 5 and value > 3 and len(fiveSetsList) < 1:
+                fiveSetsList.append(key)
 
-
-    print "\ta. 4 sets of 2 files that changed together at least 3 times:"
-    for index, items in enumerate(twoSetsList):
-        print "\t\tSet:", index+1
-        for i in items:
-            print "\t\t" + i
         print ""
+        print "\t\ta) 4 sets of 2 files that changed together at least 3 times:"
+        for index, items in enumerate(twoSetsList):
+            print "\t\t\tSet:", index+1
+            for i in items:
+                print "\t\t\t\t-" + i
+            print ""
 
-    print "\tb. 3 sets of 3 files that changed together at least 3 times:"
-    for index, items in enumerate(threeSetsList):
-        print "\t\tSet:", index+1
-        for i in items:
-            print "\t\t" + i
-        print ""
+        print "\t\tb) 3 sets of 3 files that changed together at least 3 times:"
+        for index, items in enumerate(threeSetsList):
+            print "\t\t\tSet:", index+1
+            for i in items:
+                print "\t\t\t\t-" + i
+            print ""
 
-    print "\tc. 2 sets of 4 files that changed together at least 3 times:"
-    for index, items in enumerate(fourSetsList):
-        print "\t\tSet:", index+1
-        for i in items:
-            print "\t\t" + i
-        print ""
+        print "\t\tc) 2 sets of 4 files that changed together at least 3 times:"
+        for index, items in enumerate(fourSetsList):
+            print "\t\t\tSet:", index+1
+            for i in items:
+                print "\t\t\t\t-" + i
+            print ""
 
-    print "\td. 1 sets of 5 files that changed together at least 3 times:"
-    for index, items in enumerate(fiveSetsList):
-        print "\t\tSet:", index+1
-        for i in items:
-            print "\t\t" + i
+        print "\t\td) 1 sets of 5 files that changed together at least 3 times:"
+        for index, items in enumerate(fiveSetsList):
+            print "\t\t\tSet:", index+1
+            for i in items:
+                print "\t\t\t\t-" + i
+            print ""
         print ""
 
         #print combos
@@ -435,17 +447,33 @@ def main():
         # map and reduce elements
         # print elem
 
+    '''
+    counts = [0, 0, 0, 0, 0]         # will contain [0%-19.9%], [20%-39.9%], ...
+    for keys, value in contributors[repos[0]].iteritems():
+        dec = float(value[1])/float(a_ret) * 100
+        if dec < 20.0:
+            counts[0] += 1
+        if dec >= 20.0 and dec < 40.0:
+            counts[1] += 1
+        if dec >= 40.0 and dec < 60.0:
+            counts[2] += 1
+        if dec >= 60.0 and dec < 80.0:
+            counts[3] += 1
+        if dec >= 80.0:
+            counts[4] += 1
 
-    objects = ('Python', 'C++', 'Java', 'Perl', 'Scala', 'Lisp')
-    y_pos = np.arange(len(objects))
-    performance = [10,8,6,4,2,1]
+    #for keys in contributors[repos[0]]
+    xObjects = ["0% to 20%", "20% to 40%", "40% to 60%", "60% to 80%", "80% to 100%"]
+    y_pos = np.arange(len(xObjects))
+    performance = counts
 
-    plt.bar(y_pos, performance, align='center', alpha=0.5)
-    plt.xticks(y_pos, objects)
-    plt.ylabel('Usage')
-    plt.title('Programming language usage')
+    plt.bar(y_pos, performance, align='center', alpha=1.0)
+    plt.xticks(y_pos, xObjects)
+    plt.ylabel('Number Of Users')
+    plt.title('Number of Users Grouped By Commit Percentage')
 
     plt.show()
+    '''
 
     # get hash value of commit
     # git log --pretty=format:"%h"
