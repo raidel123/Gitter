@@ -2,6 +2,11 @@ import os
 import subprocess
 import git
 import json
+import itertools
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+import matplotlib.pyplot as plt
+
 from subprocess import PIPE
 from datetime import date, datetime, timedelta
 
@@ -223,10 +228,10 @@ def changedFiles(repo, hashes):
 
     for hash in hashes:
         #print hash
-        files = subprocess.check_output(('git', 'diff-tree', '--no-commit-id', '--name-only', '-r', hash), shell=True)
+        files = subprocess.check_output(('git diff-tree --no-commit-id --name-only -r ' + hash), shell=True)
         files = files.split('\n')
         files = files[:-1]                          # remove empty space at end of every line
-        if len(files) > 0 and len(files) < 10:
+        if len(files) > 0:
             # print files
             changes.append(files)
         #print ""
@@ -322,9 +327,9 @@ def main():
 
     print "Question 2:"
 
+    '''
     changes = []
 
-    '''
     for repo in repos:
         os.chdir(getPath(repo))
 
@@ -334,13 +339,113 @@ def main():
 
         os.chdir(homePath)
 
-
-    with open('data.txt', 'w') as outfile:
+    with open('data2.txt', 'w') as outfile:
         json.dump(reposChanges, outfile)
 
     '''
+    # load files changed during commit,
+    # get the files by taking block comment above out
+    # IT takes too much time to get the values with function above
+    reposChanges = json.load(open('data.json'))
+
+    #print(reposChanges)
+
+    repo0 = reposChanges[repos[0]]
+    repo1 = reposChanges[repos[1]]
+
+    setDictList = []
+
+    for repo in repos:
+        setDict = {}
+        for a in reposChanges[repo]:
+            #for elem in a:
+            for i in range(2, len(a)+1):
+                if len(a) > 1:
+                    #print "len:", len(a)
+                    #print "i:", i
+                    combos = list(itertools.combinations(a, i))
+
+                    for item in combos:
+                        # print item
+
+                        if item in setDict:
+                            setDict[item] +=1
+
+                            #if (setDict[item] > 2):
+                                #if len(item) > 3:
+                                    # print "item length:", len(item)
+                                    # print "found set of:", setDict[item]
+                        else:
+                            setDict[item] = 0
+
+        setDictList.append(setDict)
+
+    twoSetsList     = []
+    threeSetsList   = []
+    fourSetsList    = []
+    fiveSetsList    = []
+
+    for key, value in setDictList[0].iteritems():
+        #print key
+        if len(key) is 2 and value > 3 and len(twoSetsList) < 4:
+            twoSetsList.append(key)
+
+        if len(key) is 3 and value > 3 and len(threeSetsList) < 3:
+            threeSetsList.append(key)
+
+        if len(key) is 4 and value > 3 and len(fourSetsList) < 2:
+            fourSetsList.append(key)
+
+        if len(key) is 5 and value > 3 and len(fiveSetsList) < 1:
+            fiveSetsList.append(key)
 
 
+    print "\ta. 4 sets of 2 files that changed together at least 3 times:"
+    for index, items in enumerate(twoSetsList):
+        print "\t\tSet:", index+1
+        for i in items:
+            print "\t\t" + i
+        print ""
+
+    print "\tb. 3 sets of 3 files that changed together at least 3 times:"
+    for index, items in enumerate(threeSetsList):
+        print "\t\tSet:", index+1
+        for i in items:
+            print "\t\t" + i
+        print ""
+
+    print "\tc. 2 sets of 4 files that changed together at least 3 times:"
+    for index, items in enumerate(fourSetsList):
+        print "\t\tSet:", index+1
+        for i in items:
+            print "\t\t" + i
+        print ""
+
+    print "\td. 1 sets of 5 files that changed together at least 3 times:"
+    for index, items in enumerate(fiveSetsList):
+        print "\t\tSet:", index+1
+        for i in items:
+            print "\t\t" + i
+        print ""
+
+        #print combos
+        # find the superset of elements
+
+
+        # map and reduce elements
+        # print elem
+
+
+    objects = ('Python', 'C++', 'Java', 'Perl', 'Scala', 'Lisp')
+    y_pos = np.arange(len(objects))
+    performance = [10,8,6,4,2,1]
+
+    plt.bar(y_pos, performance, align='center', alpha=0.5)
+    plt.xticks(y_pos, objects)
+    plt.ylabel('Usage')
+    plt.title('Programming language usage')
+
+    plt.show()
 
     # get hash value of commit
     # git log --pretty=format:"%h"
